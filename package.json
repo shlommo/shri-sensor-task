@@ -1,0 +1,23 @@
+{
+  "name": "shri-sensor-task",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/szhakupbekov/shri-sensor-task.git"
+  },
+  "author": "Sayan Zhakupbekov",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/szhakupbekov/shri-sensor-task/issues"
+  },
+  "homepage": "https://github.com/szhakupbekov/shri-sensor-task#readme",
+  "dependencies": {
+    "express": "^4.16.2",
+    "nodemon": "^1.17.1"
+  }
+}
