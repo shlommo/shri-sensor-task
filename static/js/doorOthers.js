@@ -37,15 +37,19 @@ function Door0(number, onUnlock) {
     function _onButtonPointerUp(e) {
         e.target.classList.remove('door-riddle__button_pressed');
         resetBtnMovement(e.target);
+        dropAllCirclesStatus();
     }
 
     function _moveBtnY(startYCoord, e) {
         e.target.style.transform = 'translateY('+(e.pageY - startYCoord - e.height / 2)+'px)';
-        checkCondition.apply(this, [e]);
+        checkCondition.call(this, e);
     }
 
     function resetBtnMovement(btn) {
         btn.style.transform = 'none';
+    }
+
+    function dropAllCirclesStatus() {
         checkCircles.forEach(function(c) {
             c.classList.remove('in-focus');
             c.setAttribute('data-checked', '0');
@@ -86,10 +90,11 @@ function Door0(number, onUnlock) {
             isAllChecked = checkAllCircles();
             if (isAllChecked) {
                 self.unlock();
+                dropAllCirclesStatus();
             }
         });
 
-        // если все три кнопки встали в свои кружочки
+        // если все три кнопки встали в свои кружочки 
         function checkAllCircles() {
             return checkCircles.every(function(c) {
                 return +c.getAttribute('data-checked') === 1;
@@ -122,13 +127,13 @@ function Door1(number, onUnlock) {
     DoorBase.apply(this, arguments);
 
     // ==== Напишите свой код для открытия второй двери здесь ====
-    // Для примера дверь откроется просто по клику на неё
+    // Эмуляция жеста "spread"(увеличение)
+
+    var baseV = 0,
+        sampleCircle = document.querySelector('.helpers__circle');
 
     var buttons = [
         this.popup.querySelector('.door-riddle__button_0'),
-        this.popup.querySelector('.door-riddle__button_1'),
-        this.popup.querySelector('.door-riddle__button_2'),
-        this.popup.querySelector('.door-riddle__button_3')
     ];
 
     buttons.forEach(function(b) {
@@ -136,35 +141,68 @@ function Door1(number, onUnlock) {
         b.addEventListener('pointerup', _onButtonPointerUp.bind(this));
         b.addEventListener('pointercancel', _onButtonPointerUp.bind(this));
         b.addEventListener('pointerleave', _onButtonPointerUp.bind(this));
-        // b.addEventListener('pointermove', _onButtonPointerMove.bind(this));
     }.bind(this));
 
+
     function _onButtonPointerDown(e) {
+        baseV = e.target.offsetWidth; 
         e.target.classList.add('door-riddle__button_pressed');
+        e.target.addEventListener('pointermove', _onButtonPointerMove.bind(this));
     }
 
     function _onButtonPointerUp(e) {
         e.target.classList.remove('door-riddle__button_pressed');
+        e.target.removeEventListener('pointermove', _onButtonPointerMove.bind(this));
+        firstEvent = null;
+        firstPointerId = null;
+        e.target.style.width = baseV + 'px';
+        e.target.style.height = baseV + 'px';
+        e.target.style.backgroundColor = '#583319';
     }
 
-    // function _onButtonPointerMove(e) {
-    //     console.log(e);
-    // }
+    var firstPointerId = null,
+        firstEvent = null;
+    function _onButtonPointerMove(e) {
+        if (typeof firstPointerId === 'number' && e.pointerId !== firstPointerId) {
+            _onButtonPointerSpread.apply(this, [firstEvent, e]);
+        } 
+        firstPointerId = e.pointerId;
+        firstEvent = e;
+    }
 
-    function checkCondition() {
-        var isOpened = true;
-        buttons.forEach(function(b) {
-            if (!b.classList.contains('door-riddle__button_pressed')) {
-                isOpened = false;
-            }
-        });
+    // var infoPanel = document.querySelector('.info-panel');
+    function _onButtonPointerSpread(eventOne, eventTwo) {
+        var pageXOne = eventOne.pageX,
+            pageYOne = eventOne.pageY,
+            pageXTwo = eventTwo.pageX,
+            pageYTwo = eventTwo.pageY,
+            xv = Math.max(pageXOne, pageXTwo) - Math.min(pageXOne, pageXTwo),
+            yv = Math.max(pageYOne, pageYTwo) - Math.min(pageYOne, pageYTwo),
+            mv = Math.max(xv, yv),
+            circle = eventOne.target,
+            cv = circle.offsetWidth / 2;
 
-        // Если все три кнопки зажаты одновременно, то откроем эту дверь
-        if (isOpened) {
+        if (mv > cv) {
+            circle.style.width = (cv * 2 + (mv - cv) / 20) + 'px';
+            circle.style.height = (cv * 2 + (mv - cv) / 20) + 'px';
+        }
+
+        if (cv * 2 < sampleCircle.offsetWidth / 2) {
+            circle.style.backgroundColor = '#FF4136';
+        } else if (cv * 2 < sampleCircle.offsetWidth / 1.8) {
+            circle.style.backgroundColor = '#B10DC9';
+        } else if (cv * 2 < sampleCircle.offsetWidth / 1.2) {
+            circle.style.backgroundColor = '#0074D9';
+        } else if (cv * 2 < sampleCircle.offsetWidth / 1.1) {
+            circle.style.backgroundColor = '#2ECC40';
+        } 
+
+        if (cv * 2 > sampleCircle.offsetWidth) {
             this.unlock();
         }
-    }
 
+        // infoPanel.innerHTML = ''+xv+'/'+yv+'/'+cv*2+'//'+(cv * 2 > 280);
+    }
     // ==== END Напишите свой код для открытия второй двери здесь ====
 }
 Door1.prototype = Object.create(DoorBase.prototype);
