@@ -14,6 +14,61 @@ function Door0(number, onUnlock) {
         this.popup.querySelector('.door-riddle__button_2')
     ];
 
+    buttons.forEach(function(b) {
+        b.addEventListener('pointerdown', _onButtonPointerDown.bind(this));
+        b.addEventListener('pointerup', _onButtonPointerUp.bind(this));
+        b.addEventListener('pointercancel', _onButtonPointerUp.bind(this));
+        b.addEventListener('pointerleave', _onButtonPointerUp.bind(this));
+    }.bind(this));
+
+    function _onButtonPointerDown(e) {
+        e.target.classList.add('door-riddle__button_pressed');
+        checkCondition.apply(this);
+    }
+
+    function _onButtonPointerUp(e) {
+        e.target.classList.remove('door-riddle__button_pressed');
+    }
+
+    /**
+     * Проверяем, можно ли теперь открыть дверь
+     */
+    function checkCondition() {
+        var isOpened = true;
+        buttons.forEach(function(b) {
+            if (!b.classList.contains('door-riddle__button_pressed')) {
+                isOpened = false;
+            }
+        });
+
+        // Если все три кнопки зажаты одновременно, то откроем эту дверь
+        if (isOpened) {
+            this.unlock();
+        }
+    }
+}
+
+// Наследуемся от класса DoorBase
+Door0.prototype = Object.create(DoorBase.prototype);
+Door0.prototype.constructor = DoorBase;
+// END ===================== Пример кода первой двери =======================
+
+/**
+ * @class Door1
+ * @augments DoorBase
+ * @param {Number} number
+ * @param {Function} onUnlock
+ */
+function Door1(number, onUnlock) {
+    DoorBase.apply(this, arguments);
+
+    // ==== Напишите свой код для открытия второй двери здесь ====
+    var buttons = [
+        this.popup.querySelector('.door-riddle__button_0'),
+        this.popup.querySelector('.door-riddle__button_1'),
+        this.popup.querySelector('.door-riddle__button_2')
+    ];
+
     var checkCircles = [
         this.popup.querySelector('.check-points__circle_0'),
         this.popup.querySelector('.check-points__circle_1'),
@@ -32,6 +87,8 @@ function Door0(number, onUnlock) {
         e.target.classList.add('door-riddle__button_pressed');
 
         e.target.addEventListener('pointermove', _moveBtnY.bind(this, startYCoord));
+
+        // this.unlock();
     }
 
     function _onButtonPointerUp(e) {
@@ -101,32 +158,21 @@ function Door0(number, onUnlock) {
             });
         }
     }
-
-    function getCoords(elem) {
-        var box = elem.getBoundingClientRect();
-      
-        return {
-            top: box.top + pageYOffset,
-            left: box.left + pageXOffset
-        };
-    }
+    // ==== END Напишите свой код для открытия второй двери здесь ====
 }
-
-// Наследуемся от класса DoorBase
-Door0.prototype = Object.create(DoorBase.prototype);
-Door0.prototype.constructor = DoorBase;
-// END ===================== Пример кода первой двери =======================
+Door1.prototype = Object.create(DoorBase.prototype);
+Door1.prototype.constructor = DoorBase;
 
 /**
- * @class Door1
+ * @class Door2
  * @augments DoorBase
  * @param {Number} number
  * @param {Function} onUnlock
  */
-function Door1(number, onUnlock) {
+function Door2(number, onUnlock) {
     DoorBase.apply(this, arguments);
 
-    // ==== Напишите свой код для открытия второй двери здесь ====
+    // ==== Напишите свой код для открытия третей двери здесь ====
     // Эмуляция жеста "spread"(увеличение)
 
     var baseV = 0,
@@ -148,6 +194,8 @@ function Door1(number, onUnlock) {
         baseV = e.target.offsetWidth; 
         e.target.classList.add('door-riddle__button_pressed');
         e.target.addEventListener('pointermove', _onButtonPointerMove.bind(this));
+
+        // this.unlock();
     }
 
     function _onButtonPointerUp(e) {
@@ -182,7 +230,7 @@ function Door1(number, onUnlock) {
             circle = eventOne.target,
             cv = circle.offsetWidth / 2;
 
-        if (mv > cv) {
+        if (mv > cv / 4) {
             circle.style.width = (cv * 2 + (mv - cv) / 20) + 'px';
             circle.style.height = (cv * 2 + (mv - cv) / 20) + 'px';
         }
@@ -203,25 +251,6 @@ function Door1(number, onUnlock) {
 
         // infoPanel.innerHTML = ''+xv+'/'+yv+'/'+cv*2+'//'+(cv * 2 > 280);
     }
-    // ==== END Напишите свой код для открытия второй двери здесь ====
-}
-Door1.prototype = Object.create(DoorBase.prototype);
-Door1.prototype.constructor = DoorBase;
-
-/**
- * @class Door2
- * @augments DoorBase
- * @param {Number} number
- * @param {Function} onUnlock
- */
-function Door2(number, onUnlock) {
-    DoorBase.apply(this, arguments);
-
-    // ==== Напишите свой код для открытия третей двери здесь ====
-    // Для примера дверь откроется просто по клику на неё
-    this.popup.addEventListener('click', function() {
-        this.unlock();
-    }.bind(this));
     // ==== END Напишите свой код для открытия третей двери здесь ====
 }
 Door2.prototype = Object.create(DoorBase.prototype);
@@ -239,9 +268,140 @@ function Box(number, onUnlock) {
 
     // ==== Напишите свой код для открытия сундука здесь ====
     // Для примера сундук откроется просто по клику на него
-    this.popup.addEventListener('click', function() {
-        this.unlock();
+    var buttons = [
+            this.popup.querySelector('.door-riddle__button_0'),
+        ],
+        helperPig = document.querySelector('.helpers__pig');
+
+    buttons.forEach(function(b) {
+        b.addEventListener('pointerdown', _onButtonPointerDown.bind(this));
+        b.addEventListener('pointerup', _onButtonPointerUp.bind(this));
+        b.addEventListener('pointercancel', _onButtonPointerUp.bind(this));
+        b.addEventListener('pointerleave', _onButtonPointerUp.bind(this));
     }.bind(this));
+
+    function _onButtonPointerDown(e) {
+        e.target.addEventListener('pointermove', _onButtonPointerMove.bind(this));
+    }
+
+    function _onButtonPointerUp(e) {
+        helperPig.style.transform = `none`;
+    }
+
+    function _onButtonPointerMove(e) {
+        /** 
+         * TODO: Вынести в функцию
+        */
+      var circle = e.target,
+            circleWidth = circle.offsetWidth,
+            circleCoords = getCoords(circle),
+            circleTopLeft = {
+                x: circleCoords.left,
+                y: circleCoords.top
+            },
+            circleTopRight = {
+                x: circleTopLeft.x + circleWidth,
+                y: circleTopLeft.y
+            },
+            circeBottomLeft = {
+                x: circleTopLeft.x,
+                y: circleTopLeft.y + circleWidth
+            },
+            circleBottomRight = {
+                x: circleTopLeft.x,
+                y: circleTopLeft.y + circleWidth
+            },
+            systemCenter = {
+                x: circleTopLeft.x + circleWidth / 2,
+                y: circleTopLeft.y + circleWidth / 2 
+            };
+       
+        var triangle = calculatePointLines(systemCenter, e.pageX, e.pageY),
+            quarter = findPolarCoordinateSystemQuarter(systemCenter, e.pageX, e.pageY),
+            rotateValue = calculateAngle(triangle, quarter);
+
+        helperPig.style.transform = `rotate(${rotateValue}deg)`;
+        if (rotateValue > 350) {
+            this.unlock();
+            _onButtonPointerUp();
+        }
+    }
+
+    // функция для вычесления четверти в системе координат
+    function findPolarCoordinateSystemQuarter(systemCenter, x, y) {            
+        // центр сетки координат
+        var c = systemCenter,
+            quarter = null;
+        if (x > c.x && y < c.y) {
+            quarter = 1;
+        } else if (x > c.x && y > c.y) {
+            quarter = 2;
+        } else if (x < c.x && y > c.y) {
+            quarter = 3;
+        } else {
+            quarter = 4;
+        }
+
+        return quarter;
+    }
+    
+    // вычесление длины отрезков для нахождения угла
+    function calculatePointLines(systemCenter, x, y) {
+        var triangle = {},
+            c = systemCenter,
+            opposite, // противоположный катет
+            adjacent, // прилежащий катет
+            hypotenuse; // гипотенуза
+
+        opposite = Math.max(c.y, y) - Math.min(c.y, y);
+        adjacent = Math.max(c.x, x) - Math.min(c.x, x);
+        hypotenuse = Math.pow((Math.pow(opposite, 2) + Math.pow(adjacent, 2)), 1/2);
+
+        // var div = document.createElement('div');
+        // div.style.cssText = `position: fixed; 
+        //                         top: ${systemCenter.y}px;
+        //                         left: ${systemCenter.x}px;
+        //                         width: ${adjacent}px;
+        //                         height: ${opposite}px;
+        //                         background-color: #000;
+        //                         z-index: 101;`;
+        // document.querySelector('body').appendChild(div);
+
+        return {
+            hyp: hypotenuse,
+            adj: adjacent
+        };
+    }
+        
+    function calculateAngle(triangle, quarter) {
+        var angle = 0,
+            angleRad = 0;
+
+        angleRad = Math.atan(triangle.hyp / triangle.adj); // угол в радианах 
+        angle = angleRad * 180 / Math.PI; // угол в градусах
+
+        // в зависимости от четверти, перевести в градусы для transform rotate
+        switch(quarter) {
+            case 1:
+                angle = 90 - angle;
+                break;
+            case 2:
+                angle = 90 + angle;
+                break;
+            case 3:
+                angle = 270 - angle;
+                break;
+            case 4:
+                angle = 270 + angle;
+                break;
+        }
+
+        return angle;
+    }
+
+    // this.popup.addEventListener('click', function() {
+    //     this.unlock();
+    // }.bind(this));
     // ==== END Напишите свой код для открытия сундука здесь ====
 
     this.showCongratulations = function() {
@@ -250,3 +410,12 @@ function Box(number, onUnlock) {
 }
 Box.prototype = Object.create(DoorBase.prototype);
 Box.prototype.constructor = DoorBase;
+
+function getCoords(elem) {
+    var box = elem.getBoundingClientRect();
+  
+    return {
+        top: box.top + pageYOffset,
+        left: box.left + pageXOffset
+    };
+}
