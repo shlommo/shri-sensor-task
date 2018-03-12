@@ -40,7 +40,7 @@ function Door0(number, onUnlock) {
                 isOpened = false;
             }
         });
-
+        
         // Если все три кнопки зажаты одновременно, то откроем эту дверь
         if (isOpened) {
             this.unlock();
@@ -87,8 +87,6 @@ function Door1(number, onUnlock) {
         e.target.classList.add('door-riddle__button_pressed');
 
         e.target.addEventListener('pointermove', _moveBtnY.bind(this, startYCoord));
-
-        // this.unlock();
     }
 
     function _onButtonPointerUp(e) {
@@ -174,7 +172,6 @@ function Door2(number, onUnlock) {
 
     // ==== Напишите свой код для открытия третей двери здесь ====
     // Эмуляция жеста "spread"(увеличение)
-
     var baseV = 0,
         sampleCircle = document.querySelector('.helpers__circle');
 
@@ -194,8 +191,6 @@ function Door2(number, onUnlock) {
         baseV = e.target.offsetWidth; 
         e.target.classList.add('door-riddle__button_pressed');
         e.target.addEventListener('pointermove', _onButtonPointerMove.bind(this));
-
-        // this.unlock();
     }
 
     function _onButtonPointerUp(e) {
@@ -218,7 +213,6 @@ function Door2(number, onUnlock) {
         firstEvent = e;
     }
 
-    // var infoPanel = document.querySelector('.info-panel');
     function _onButtonPointerSpread(eventOne, eventTwo) {
         var pageXOne = eventOne.pageX,
             pageYOne = eventOne.pageY,
@@ -248,8 +242,6 @@ function Door2(number, onUnlock) {
         if (cv * 2 > sampleCircle.offsetWidth) {
             this.unlock();
         }
-
-        // infoPanel.innerHTML = ''+xv+'/'+yv+'/'+cv*2+'//'+(cv * 2 > 280);
     }
     // ==== END Напишите свой код для открытия третей двери здесь ====
 }
@@ -268,31 +260,61 @@ function Box(number, onUnlock) {
 
     // ==== Напишите свой код для открытия сундука здесь ====
     // Для примера сундук откроется просто по клику на него
-    var buttons = [
-            this.popup.querySelector('.door-riddle__button_0'),
-        ],
-        helperPig = document.querySelector('.helpers__pig');
+    var button = this.popup.querySelector('.door-riddle__button_0'),
+        helperPig = document.querySelector('.helpers__pig'),
+        isTouched = false,
+        firstEvent = null;
 
-    buttons.forEach(function(b) {
-        b.addEventListener('pointerdown', _onButtonPointerDown.bind(this));
-        b.addEventListener('pointerup', _onButtonPointerUp.bind(this));
-        b.addEventListener('pointercancel', _onButtonPointerUp.bind(this));
-        b.addEventListener('pointerleave', _onButtonPointerUp.bind(this));
-    }.bind(this));
+    function addEventListeners(context, b) {
+        b.addEventListener('pointerdown', _onButtonPointerDown.bind(context));
+        b.addEventListener('pointerup', _onButtonPointerUp.bind(context));
+        b.addEventListener('pointercancel', _onButtonPointerUp.bind(context));
+        b.addEventListener('pointerleave', _onButtonPointerUp.bind(context));
+    }
+
+    addEventListeners(this, button);
 
     function _onButtonPointerDown(e) {
-        e.target.addEventListener('pointermove', _onButtonPointerMove.bind(this));
+        if (!isTouched) {
+            isTouched = true;
+            firstEvent = e;
+            return;
+        }
+
+        runRotateEvent.apply(this, [firstEvent, e]);
     }
 
     function _onButtonPointerUp(e) {
         helperPig.style.transform = `none`;
+        isTouched = false;
+        firstEvent = null;
     }
 
-    function _onButtonPointerMove(e) {
+    function runRotateEvent(firstEvent, secondEvent) {
+        var _pigPointerMoveEvent = function(moveEvent) {
+            return _onButtonPointerMove.apply(this, [firstEvent, moveEvent])
+        };
+
+        var _pigPoinerUpEvent = function(e) {
+            var oldElement = e.target;
+            var newElement = oldElement.cloneNode(true);
+            oldElement.parentNode.replaceChild(newElement, oldElement);
+            isTouched = false;
+            firstEvent = null;
+            addEventListeners(this, newElement);
+        };
+
+        secondEvent.target.addEventListener('pointermove', _pigPointerMoveEvent.bind(this));
+        secondEvent.target.addEventListener('pointerup', _pigPoinerUpEvent.bind(this));
+        secondEvent.target.addEventListener('pointercancel', _pigPoinerUpEvent.bind(this));
+        secondEvent.target.addEventListener('pointerleave', _pigPoinerUpEvent.bind(this));
+    }
+
+    function _onButtonPointerMove(firstEvent, moveEvent) {
         /** 
          * TODO: Вынести в функцию
         */
-      var circle = e.target,
+        var circle = moveEvent.target,
             circleWidth = circle.offsetWidth,
             circleCoords = getCoords(circle),
             circleTopLeft = {
@@ -316,8 +338,8 @@ function Box(number, onUnlock) {
                 y: circleTopLeft.y + circleWidth / 2 
             };
        
-        var triangle = calculatePointLines(systemCenter, e.pageX, e.pageY),
-            quarter = findPolarCoordinateSystemQuarter(systemCenter, e.pageX, e.pageY),
+        var triangle = calculatePointLines(systemCenter, moveEvent.pageX, moveEvent.pageY),
+            quarter = findPolarCoordinateSystemQuarter(systemCenter, moveEvent.pageX, moveEvent.pageY),
             rotateValue = calculateAngle(triangle, quarter);
 
         helperPig.style.transform = `rotate(${rotateValue}deg)`;
@@ -357,16 +379,6 @@ function Box(number, onUnlock) {
         adjacent = Math.max(c.x, x) - Math.min(c.x, x);
         hypotenuse = Math.pow((Math.pow(opposite, 2) + Math.pow(adjacent, 2)), 1/2);
 
-        // var div = document.createElement('div');
-        // div.style.cssText = `position: fixed; 
-        //                         top: ${systemCenter.y}px;
-        //                         left: ${systemCenter.x}px;
-        //                         width: ${adjacent}px;
-        //                         height: ${opposite}px;
-        //                         background-color: #000;
-        //                         z-index: 101;`;
-        // document.querySelector('body').appendChild(div);
-
         return {
             hyp: hypotenuse,
             adj: adjacent
@@ -399,9 +411,6 @@ function Box(number, onUnlock) {
         return angle;
     }
 
-    // this.popup.addEventListener('click', function() {
-    //     this.unlock();
-    // }.bind(this));
     // ==== END Напишите свой код для открытия сундука здесь ====
 
     this.showCongratulations = function() {
